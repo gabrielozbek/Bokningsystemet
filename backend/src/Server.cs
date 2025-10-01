@@ -1,10 +1,11 @@
-namespace WebApp;
+﻿namespace WebApp;
 public static class Server
 {
     public static void Start()
     {
         var builder = WebApplication.CreateBuilder();
         App = builder.Build();
+        DatabaseSetup.Ensure();
         Middleware();
         DebugLog.Start();
         Acl.Start();
