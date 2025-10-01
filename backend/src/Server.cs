@@ -11,6 +11,8 @@ public static class Server
         Acl.Start();
         ErrorHandler.Start();
         FileServer.Start();
+        ProductsApi.Start();
+        BookingsApi.Start();
         LoginRoutes.Start();
         RestApi.Start();
         Session.Start();
