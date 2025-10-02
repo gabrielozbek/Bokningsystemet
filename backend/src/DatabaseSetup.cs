@@ -267,8 +267,9 @@ public static class DatabaseSetup
             new { roles = "admin", method = "*", allow = "allow", route = "/api/sessions", match = "true", comment = "Admin ser sessioner" },
             new { roles = "visitor,user,staff,admin", method = "GET", allow = "allow", route = "/api/tables", match = "true", comment = "Lista bord" },
             new { roles = "visitor,user,staff,admin", method = "GET", allow = "allow", route = "/api/products", match = "true", comment = "Lista produkter" },
+            new { roles = "visitor,user,staff,admin", method = "GET", allow = "allow", route = "/api/bookings", match = "true", comment = "Lista bokningar" },
             new { roles = "visitor", method = "POST", allow = "allow", route = "/api/bookings", match = "true", comment = "Besokare kan skapa bokning" },
-            new { roles = "user,staff,admin", method = "*", allow = "allow", route = "/api/bookings", match = "true", comment = "Inloggade far hantera bokningar" }
+            new { roles = "visitor,user,staff,admin", method = "*", allow = "allow", route = "/api/bookings", match = "true", comment = "Hantera bokningar" }
         };
 
         foreach (var entry in entries)

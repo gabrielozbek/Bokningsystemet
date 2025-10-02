@@ -35,6 +35,7 @@ const initialFormState = (): FormState => ({
 
 export default function BookingsPage() {
   const { bookings, isLoading, error, reload, remove, create, update } = useBookings();
+  const showError = Boolean(error && !isLoading && bookings.length === 0);
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [tables, setTables] = useState<RestaurantTable[]>([]);
@@ -289,7 +290,7 @@ export default function BookingsPage() {
         </div>
       </div>
 
-      {error ? <Alert variant="danger">Det gick inte att läsa bokningarna. Försök igen.</Alert> : null}
+      {showError ? <Alert variant="danger">Det gick inte att läsa bokningarna. Försök igen.</Alert> : null}
 
       <div className="table-responsive">
         <BootstrapTable striped bordered hover>

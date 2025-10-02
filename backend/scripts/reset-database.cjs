@@ -268,6 +268,14 @@ const seed = db.transaction(() => {
       comment: 'Lista produkter'
     },
     {
+      userRoles: 'visitor,user,staff,admin',
+      method: 'GET',
+      allow: 'allow',
+      route: '/api/bookings',
+      match: 'true',
+      comment: 'Lista bokningar'
+    },
+    {
       userRoles: 'visitor',
       method: 'POST',
       allow: 'allow',
@@ -276,12 +284,12 @@ const seed = db.transaction(() => {
       comment: 'Besokare kan skapa bokning'
     },
     {
-      userRoles: 'user,staff,admin',
+      userRoles: 'visitor,user,staff,admin',
       method: '*',
       allow: 'allow',
       route: '/api/bookings',
       match: 'true',
-      comment: 'Inloggade far hantera bokningar'
+      comment: 'Hantera bokningar'
     }
   ];
   aclEntries.forEach(entry => insertAcl.run(entry));

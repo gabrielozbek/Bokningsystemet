@@ -1,0 +1,24 @@
+﻿    {
+      userRoles: 'visitor,user,staff,admin',
+      method: 'GET',
+      allow: 'allow',
+      route: '/api/bookings',
+      match: 'true',
+      comment: 'Lista bokningar'
+    },
+    {
+      userRoles: 'visitor',
+      method: 'POST',
+      allow: 'allow',
+      route: '/api/bookings',
+      match: 'true',
+      comment: 'Besokare kan skapa bokning'
+    },
+    {
+      userRoles: 'visitor,user,staff,admin',
+      method: '*',
+      allow: 'allow',
+      route: '/api/bookings',
+      match: 'true',
+      comment: 'Hantera bokningar'
+    }
