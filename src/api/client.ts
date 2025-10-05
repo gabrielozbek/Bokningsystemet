@@ -1,4 +1,4 @@
-﻿export interface ApiError extends Error {
+export interface ApiError extends Error {
   status: number;
   details?: unknown;
 }
@@ -8,12 +8,15 @@ interface RequestOptions extends RequestInit {
 }
 
 async function request<T>(input: RequestInfo | URL, options: RequestOptions = {}): Promise<T> {
+  const { parseJson, ...rest } = options;
+
   const init: RequestInit = {
+    credentials: rest.credentials ?? 'include',
+    ...rest,
     headers: {
       'Content-Type': 'application/json',
-      ...(options.headers ?? {})
-    },
-    ...options
+      ...(rest.headers ?? {})
+    }
   };
 
   const response = await fetch(input, init);
@@ -29,7 +32,7 @@ async function request<T>(input: RequestInfo | URL, options: RequestOptions = {}
     throw error;
   }
 
-  if (options.parseJson === false || response.status === 204) {
+  if (parseJson === false || response.status === 204) {
     return undefined as T;
   }
 
