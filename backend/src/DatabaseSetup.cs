@@ -161,16 +161,16 @@ public static class DatabaseSetup
             new
             {
                 name = "Bistro Burger",
-                description = "Saftig burgare med cheddar, karamelliserad lÃ¶k och tryffelmajonnÃ¤s.",
+                description = "Saftig burgare med cheddar, karamelliserad lok och tryffelmajonnas.",
                 quantity = "10",
                 price = 169m,
                 slug = "bistro-burger",
-                categories = "JSON:[\"Middag\",\"KÃ¶tt\"]"
+                categories = "JSON:[\"Middag\",\"Kott\"]"
             },
             new
             {
                 name = "Grillad Lax",
-                description = "Grillad laxfilÃ© serverad med citronhollandaise och sparris.",
+                description = "Grillad laxfile serverad med citronhollandaise och sparris.",
                 quantity = "8",
                 price = 189m,
                 slug = "grillad-lax",
@@ -183,7 +183,7 @@ public static class DatabaseSetup
                 quantity = "12",
                 price = 129m,
                 slug = "caprese-sallad",
-                categories = "JSON:[\"FÃ¶rrÃ¤tt\",\"Vegetariskt\"]"
+                categories = "JSON:[\"Forratt\",\"Vegetariskt\"]"
             }
         };
 
@@ -207,6 +207,8 @@ public static class DatabaseSetup
         var tableTwoId = GetId("SELECT id FROM tables WHERE name = $name", new { name = "Fonsterbord 2" });
         var tableFiveId = GetId("SELECT id FROM tables WHERE name = $name", new { name = "Salong 2" });
 
+        string Format(DateTime dt) => dt.ToString("yyyy-MM-ddTHH:mm:ss");
+
         var insertSql = @"INSERT INTO bookings (
                 userId, tableId, guestCount, start, endTime, status, note
             ) VALUES (
@@ -218,8 +220,8 @@ public static class DatabaseSetup
             userId = adminId,
             tableId = tableOneId,
             guestCount = 2,
-            start = "2025-10-10T18:00:00",
-            endTime = "2025-10-10T20:00:00",
+            start = Format(new DateTime(2025, 10, 10, 18, 0, 0)),
+            endTime = Format(new DateTime(2025, 10, 10, 18, 0, 0).AddHours(2)),
             status = "booked",
             note = "Anniversary dinner"
         });
@@ -229,8 +231,8 @@ public static class DatabaseSetup
             userId = staffId,
             tableId = tableFiveId,
             guestCount = 6,
-            start = "2025-10-11T19:00:00",
-            endTime = "2025-10-11T21:30:00",
+            start = Format(new DateTime(2025, 10, 11, 19, 0, 0)),
+            endTime = Format(new DateTime(2025, 10, 11, 19, 0, 0).AddHours(2)),
             status = "blocked",
             note = "Team planning"
         });
@@ -240,8 +242,8 @@ public static class DatabaseSetup
             userId = userId,
             tableId = tableTwoId,
             guestCount = 4,
-            start = "2025-10-12T17:30:00",
-            endTime = "2025-10-12T19:30:00",
+            start = Format(new DateTime(2025, 10, 12, 17, 30, 0)),
+            endTime = Format(new DateTime(2025, 10, 12, 17, 30, 0).AddHours(2)),
             status = "booked",
             note = "Family night"
         });
@@ -267,9 +269,10 @@ public static class DatabaseSetup
             new { roles = "admin", method = "*", allow = "allow", route = "/api/sessions", match = "true", comment = "Admin ser sessioner" },
             new { roles = "visitor,user,staff,admin", method = "GET", allow = "allow", route = "/api/tables", match = "true", comment = "Lista bord" },
             new { roles = "visitor,user,staff,admin", method = "GET", allow = "allow", route = "/api/products", match = "true", comment = "Lista produkter" },
-            new { roles = "visitor,user,staff,admin", method = "GET", allow = "allow", route = "/api/bookings", match = "true", comment = "Lista bokningar" },
-            new { roles = "visitor", method = "POST", allow = "allow", route = "/api/bookings", match = "true", comment = "Besokare kan skapa bokning" },
-            new { roles = "visitor,user,staff,admin", method = "*", allow = "allow", route = "/api/bookings", match = "true", comment = "Hantera bokningar" }
+            new { roles = "visitor,user,staff,admin", method = "GET", allow = "allow", route = "/api/availability", match = "true", comment = "Tillganglighet" },
+            new { roles = "user,staff,admin", method = "GET", allow = "allow", route = "/api/bookings", match = "true", comment = "Lista bokningar" },
+            new { roles = "user,staff,admin", method = "POST", allow = "allow", route = "/api/bookings", match = "true", comment = "Skapa bokning" },
+            new { roles = "user,staff,admin", method = "*", allow = "allow", route = "/api/bookings", match = "true", comment = "Hantera bokningar" }
         };
 
         foreach (var entry in entries)

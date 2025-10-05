@@ -268,6 +268,14 @@ const seed = db.transaction(() => {
       comment: 'Lista produkter'
     },
     {
+      userRoles: 'visitor,user,staff,admin',
+      method: 'GET',
+      allow: 'allow',
+      route: '/api/availability',
+      match: 'true',
+      comment: 'Tillganglighet'
+    },
+    {
       userRoles: 'user,staff,admin',
       method: 'GET',
       allow: 'allow',

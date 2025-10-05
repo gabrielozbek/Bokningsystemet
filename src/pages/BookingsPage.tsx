@@ -1,4 +1,4 @@
-﻿import { useCallback, useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from 'react';
+﻿import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import { Alert, Button, Card, Col, Form, Row, Spinner, Table as BootstrapTable } from 'react-bootstrap';
 import useBookings from '../hooks/useBookings';
 import { fetchTables } from '../api/tables';
@@ -35,6 +35,17 @@ const initialFormState = (): FormState => ({
   status: 'booked',
   note: ''
 });
+
+function toDateTimeLocalValue(date: Date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}T${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+}
+
+function addTwoHours(value: string) {
+  const start = new Date(value);
+  if (Number.isNaN(start.getTime())) { return value; }
+  const end = new Date(start.getTime() + 2 * 60 * 60 * 1000);
+  return toDateTimeLocalValue(end);
+}
 
 export default function BookingsPage() {
   const { user, hasRole } = useAuth();
@@ -91,27 +102,44 @@ export default function BookingsPage() {
   }, [bookings, isManager, isCustomer, user]);
 
   function resetForm() {
-    setFormState(isCustomer && user ? { ...initialFormState(), userId: user.id.toString() } : initialFormState());
+    const base = initialFormState();
+    setFormState(isCustomer && user ? { ...base, userId: user.id.toString() } : base);
     setEditingId(null);
     setFormError(null);
     setFormSuccess(null);
   }
 
-  function handleChange(event: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) {
-    const { name, value } = event.target;
-    setFormState(previous => ({ ...previous, [name]: value }));
+  function handleStartChange(value: string) {
+    setFormState(previous => ({ ...previous, start: value, endTime: addTwoHours(value) }));
+  }
+
+  function handleTableChange(value: string) {
+    setFormState(previous => ({ ...previous, tableId: value }));
+  }
+
+  function handleGuestChange(value: string) {
+    setFormState(previous => ({ ...previous, guestCount: value }));
+  }
+
+  function handleStatusChange(value: string) {
+    setFormState(previous => ({ ...previous, status: value }));
+  }
+
+  function handleNoteChange(value: string) {
+    setFormState(previous => ({ ...previous, note: value }));
   }
 
   function startEdit(booking: Booking) {
     setEditingId(booking.id);
     setFormSuccess(null);
     setFormError(null);
+    const startValue = booking.start.slice(0, 16);
     setFormState({
       userId: booking.userId.toString(),
       tableId: booking.tableId.toString(),
       guestCount: booking.guestCount.toString(),
-      start: booking.start.slice(0, 16),
-      endTime: booking.endTime.slice(0, 16),
+      start: startValue,
+      endTime: addTwoHours(startValue),
       status: booking.status,
       note: booking.note ?? ''
     });
@@ -126,7 +154,7 @@ export default function BookingsPage() {
     const tableId = Number(formState.tableId);
     const guestCount = Number(formState.guestCount);
     const start = formState.start;
-    const endTime = formState.endTime;
+    const endTime = formState.endTime || addTwoHours(start);
     const status = formState.status.trim() || 'booked';
     const note = formState.note.trim();
 
@@ -142,12 +170,8 @@ export default function BookingsPage() {
       setFormError('Ange antal gäster (minst 1).');
       return;
     }
-    if (!start || !endTime) {
-      setFormError('Start- och sluttid måste fyllas i.');
-      return;
-    }
-    if (new Date(start) >= new Date(endTime)) {
-      setFormError('Sluttiden måste vara senare än starttiden.');
+    if (!start) {
+      setFormError('Starttiden måste fyllas i.');
       return;
     }
 
@@ -193,7 +217,7 @@ export default function BookingsPage() {
       <Card>
         <Card.Body>
           <Card.Title>{editingId ? 'Redigera bokning' : 'Skapa bokning'}</Card.Title>
-          <Card.Text className="text-body-secondary">Fyll i fälten för att skapa eller ändra en bokning.</Card.Text>
+          <Card.Text className="text-body-secondary">Tider bokas alltid i tvåtimmarsblock.</Card.Text>
           <Form onSubmit={handleSubmit} className="d-grid gap-3">
             {isManager ? <Form.Group controlId="booking-userId">
               <Form.Label>Användar-ID</Form.Label>
@@ -202,7 +226,7 @@ export default function BookingsPage() {
                 type="number"
                 min={1}
                 value={formState.userId}
-                onChange={handleChange}
+                onChange={event => setFormState(previous => ({ ...previous, userId: event.target.value }))}
                 placeholder="Ex. 1"
                 required
               />
@@ -212,7 +236,7 @@ export default function BookingsPage() {
               <Form.Select
                 name="tableId"
                 value={formState.tableId}
-                onChange={handleChange}
+                onChange={event => handleTableChange(event.target.value)}
                 disabled={isLoadingTables}
                 required
               >
@@ -230,7 +254,7 @@ export default function BookingsPage() {
                 type="number"
                 min={1}
                 value={formState.guestCount}
-                onChange={handleChange}
+                onChange={event => handleGuestChange(event.target.value)}
                 required
               />
             </Form.Group>
@@ -240,7 +264,7 @@ export default function BookingsPage() {
                 name="start"
                 type="datetime-local"
                 value={formState.start}
-                onChange={handleChange}
+                onChange={event => handleStartChange(event.target.value)}
                 required
               />
             </Form.Group>
@@ -250,16 +274,17 @@ export default function BookingsPage() {
                 name="endTime"
                 type="datetime-local"
                 value={formState.endTime}
-                onChange={handleChange}
-                required
+                disabled
+                readOnly
               />
+              <Form.Text className="text-body-secondary">Sluttiden sätts automatiskt två timmar efter start.</Form.Text>
             </Form.Group>
             <Form.Group controlId="booking-status">
               <Form.Label>Status</Form.Label>
               <Form.Select
                 name="status"
                 value={formState.status}
-                onChange={handleChange}
+                onChange={event => handleStatusChange(event.target.value)}
                 disabled={isCustomer}
               >
                 {statusOptions.map(option => (
@@ -274,7 +299,7 @@ export default function BookingsPage() {
                 name="note"
                 rows={2}
                 value={formState.note}
-                onChange={handleChange}
+                onChange={event => handleNoteChange(event.target.value)}
                 placeholder="Frivilligt"
               />
             </Form.Group>

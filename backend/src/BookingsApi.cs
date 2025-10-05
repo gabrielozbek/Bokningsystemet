@@ -2,6 +2,8 @@
 
 public static class BookingsApi
 {
+    private const string DateFormat = "yyyy-MM-ddTHH:mm:ss";
+
     private static dynamic? GetCurrentUser(HttpContext context)
     {
         try { return Session.Get(context, "user"); }
@@ -9,6 +11,14 @@ public static class BookingsApi
     }
 
     private static bool IsCustomer(dynamic? user) => user != null && (string)user.role == "user";
+
+    private static void NormalizeTimes(dynamic body)
+    {
+        var start = DateTime.Parse((string)body.start);
+        var end = start.AddHours(2);
+        body.start = start.ToString(DateFormat);
+        body.endTime = end.ToString(DateFormat);
+    }
 
     public static void Start()
     {
@@ -62,6 +72,7 @@ public static class BookingsApi
             {
                 body.status = "booked";
             }
+            NormalizeTimes(body);
 
             var parsed = ReqBodyParse("bookings", body);
             var sql = $"INSERT INTO bookings({parsed.insertColumns}) VALUES({parsed.insertValues})";
@@ -110,6 +121,7 @@ public static class BookingsApi
             {
                 body.status = "booked";
             }
+            NormalizeTimes(body);
 
             var parsed = ReqBodyParse("bookings", body);
             var sql = $"UPDATE bookings SET {parsed.update} WHERE id = $id";
