@@ -260,6 +260,30 @@ const seed = db.transaction(() => {
       comment: 'Lista bord'
     },
     {
+      userRoles: 'staff,admin',
+      method: 'POST',
+      allow: 'allow',
+      route: '/api/tables',
+      match: 'true',
+      comment: 'Skapa bord'
+    },
+    {
+      userRoles: 'staff,admin',
+      method: 'PUT',
+      allow: 'allow',
+      route: '/api/tables',
+      match: 'true',
+      comment: 'Uppdatera bord'
+    },
+    {
+      userRoles: 'staff,admin',
+      method: 'DELETE',
+      allow: 'allow',
+      route: '/api/tables',
+      match: 'true',
+      comment: 'Ta bort bord'
+    },
+    {
       userRoles: 'visitor,user,staff,admin',
       method: 'GET',
       allow: 'allow',

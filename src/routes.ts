@@ -1,10 +1,11 @@
-﻿import { createElement, type ComponentType } from 'react';
+import { createElement, type ComponentType } from 'react';
 import NotFoundPage from './pages/NotFoundPage.tsx';
 import Start from './pages/Start.tsx';
 import BookingsPage from './pages/BookingsPage.tsx';
 import LoginPage from './pages/LoginPage.tsx';
 import RegisterPage from './pages/RegisterPage.tsx';
 import AvailabilityPage from './pages/AvailabilityPage.tsx';
+import TableManagementPage from './pages/TableManagementPage.tsx';
 import RequireAuth from './components/RequireAuth';
 import type Route from './interfaces/Route';
 
@@ -18,6 +19,7 @@ const pages: RoutableComponent[] = [
   LoginPage as RoutableComponent,
   RegisterPage as RoutableComponent,
   AvailabilityPage as RoutableComponent,
+  TableManagementPage as RoutableComponent,
 ];
 
 export default pages

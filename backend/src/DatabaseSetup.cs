@@ -1,4 +1,4 @@
-namespace WebApp;
+﻿namespace WebApp;
 
 public static class DatabaseSetup
 {
@@ -268,6 +268,9 @@ public static class DatabaseSetup
             new { roles = "admin", method = "*", allow = "allow", route = "/api/acl", match = "true", comment = "Admin hanterar ACL" },
             new { roles = "admin", method = "*", allow = "allow", route = "/api/sessions", match = "true", comment = "Admin ser sessioner" },
             new { roles = "visitor,user,staff,admin", method = "GET", allow = "allow", route = "/api/tables", match = "true", comment = "Lista bord" },
+            new { roles = "staff,admin", method = "POST", allow = "allow", route = "/api/tables", match = "true", comment = "Skapa bord" },
+            new { roles = "staff,admin", method = "PUT", allow = "allow", route = "/api/tables", match = "true", comment = "Uppdatera bord" },
+            new { roles = "staff,admin", method = "DELETE", allow = "allow", route = "/api/tables", match = "true", comment = "Ta bort bord" },
             new { roles = "visitor,user,staff,admin", method = "GET", allow = "allow", route = "/api/products", match = "true", comment = "Lista produkter" },
             new { roles = "visitor,user,staff,admin", method = "GET", allow = "allow", route = "/api/availability", match = "true", comment = "Tillganglighet" },
             new { roles = "user,staff,admin", method = "GET", allow = "allow", route = "/api/bookings", match = "true", comment = "Lista bokningar" },
