@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button, Container, Nav, Navbar } from 'react-bootstrap';
 import routes from '../routes';
@@ -61,9 +61,14 @@ export default function Header() {
           </Nav>
           <div className="d-flex align-items-center gap-2">
             {user ? <Navbar.Text className="text-light">{user.email}</Navbar.Text> : null}
-            {user
-              ? <Button variant="outline-light" size="sm" onClick={handleLogout} disabled={isLoading}>Logga ut</Button>
-              : <Button variant="outline-light" size="sm" onClick={() => { setExpanded(false); navigate('/login'); }}>Logga in</Button>}
+            {user ? (
+              <Button variant="outline-light" size="sm" onClick={handleLogout} disabled={isLoading}>Logga ut</Button>
+            ) : (
+              <div className="d-flex gap-2">
+                <Button variant="outline-light" size="sm" onClick={() => { setExpanded(false); navigate('/login'); }}>Logga in</Button>
+                <Button variant="light" size="sm" onClick={() => { setExpanded(false); navigate('/register'); }}>Registrera</Button>
+              </div>
+            )}
           </div>
         </Navbar.Collapse>
       </Container>

@@ -1,4 +1,4 @@
-﻿namespace WebApp;
+namespace WebApp;
 
 public static class DatabaseSetup
 {
@@ -161,16 +161,16 @@ public static class DatabaseSetup
             new
             {
                 name = "Bistro Burger",
-                description = "Saftig burgare med cheddar, karamelliserad lök och tryffelmajonnäs.",
+                description = "Saftig burgare med cheddar, karamelliserad lÃ¶k och tryffelmajonnÃ¤s.",
                 quantity = "10",
                 price = 169m,
                 slug = "bistro-burger",
-                categories = "JSON:[\"Middag\",\"Kött\"]"
+                categories = "JSON:[\"Middag\",\"KÃ¶tt\"]"
             },
             new
             {
                 name = "Grillad Lax",
-                description = "Grillad laxfilé serverad med citronhollandaise och sparris.",
+                description = "Grillad laxfilÃ© serverad med citronhollandaise och sparris.",
                 quantity = "8",
                 price = 189m,
                 slug = "grillad-lax",
@@ -183,7 +183,7 @@ public static class DatabaseSetup
                 quantity = "12",
                 price = 129m,
                 slug = "caprese-sallad",
-                categories = "JSON:[\"Förrätt\",\"Vegetariskt\"]"
+                categories = "JSON:[\"FÃ¶rrÃ¤tt\",\"Vegetariskt\"]"
             }
         };
 

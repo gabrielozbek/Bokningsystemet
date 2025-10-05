@@ -30,8 +30,8 @@ export default function LoginPage() {
     try {
       await login({ email, password });
       navigate(from, { replace: true });
-    } catch (err) {
-      console.error('Login failed', err);
+    } catch {
+      // error hanteras redan via context
     } finally {
       setSubmitting(false);
     }
@@ -75,6 +75,13 @@ export default function LoginPage() {
                 : 'Logga in'}
             </Button>
           </Form>
+          <div className="text-center">
+            <Button
+              variant="link"
+              className="p-0"
+              onClick={() => navigate('/register')}
+            >Har du inget konto? Registrera dig.</Button>
+          </div>
         </Card.Body>
       </Card>
     </Col>

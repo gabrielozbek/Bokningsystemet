@@ -4,11 +4,14 @@ import useBookings from '../hooks/useBookings';
 import { fetchTables } from '../api/tables';
 import type { default as RestaurantTable } from '../interfaces/Table';
 import type Booking from '../interfaces/Booking';
+import useAuth from '../hooks/useAuth';
 
 BookingsPage.route = {
   path: '/bookings',
   menuLabel: 'Bokningar',
-  index: 2
+  index: 2,
+  requiresAuth: true,
+  roles: ['admin', 'staff', 'user']
 };
 
 type FormState = {
@@ -34,6 +37,10 @@ const initialFormState = (): FormState => ({
 });
 
 export default function BookingsPage() {
+  const { user, hasRole } = useAuth();
+  const isManager = hasRole('admin', 'staff');
+  const isCustomer = hasRole('user') && !isManager;
+
   const { bookings, isLoading, error, reload, remove, create, update } = useBookings();
   const showError = Boolean(error && !isLoading && bookings.length === 0);
   const [deletingId, setDeletingId] = useState<number | null>(null);
@@ -44,6 +51,12 @@ export default function BookingsPage() {
   const [formState, setFormState] = useState<FormState>(initialFormState);
   const [formError, setFormError] = useState<string | null>(null);
   const [formSuccess, setFormSuccess] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (isCustomer && user) {
+      setFormState(previous => ({ ...previous, userId: user.id.toString() }));
+    }
+  }, [isCustomer, user]);
 
   const loadTables = useCallback(async () => {
     setIsLoadingTables(true);
@@ -71,8 +84,14 @@ export default function BookingsPage() {
     [tables]
   );
 
+  const visibleBookings = useMemo(() => {
+    if (isManager) { return bookings; }
+    if (isCustomer && user) { return bookings.filter(booking => booking.userId === user.id); }
+    return [];
+  }, [bookings, isManager, isCustomer, user]);
+
   function resetForm() {
-    setFormState(initialFormState());
+    setFormState(isCustomer && user ? { ...initialFormState(), userId: user.id.toString() } : initialFormState());
     setEditingId(null);
     setFormError(null);
     setFormSuccess(null);
@@ -103,7 +122,7 @@ export default function BookingsPage() {
     setFormError(null);
     setFormSuccess(null);
 
-    const userId = Number(formState.userId);
+    const userId = isManager ? Number(formState.userId) : user?.id ?? 0;
     const tableId = Number(formState.tableId);
     const guestCount = Number(formState.guestCount);
     const start = formState.start;
@@ -139,7 +158,7 @@ export default function BookingsPage() {
       start,
       endTime,
       status,
-      note
+      note,
     };
 
     try {
@@ -174,11 +193,9 @@ export default function BookingsPage() {
       <Card>
         <Card.Body>
           <Card.Title>{editingId ? 'Redigera bokning' : 'Skapa bokning'}</Card.Title>
-          <Card.Text className="text-body-secondary">
-            Fyll i fälten för att skapa eller ändra en bokning.
-          </Card.Text>
+          <Card.Text className="text-body-secondary">Fyll i fälten för att skapa eller ändra en bokning.</Card.Text>
           <Form onSubmit={handleSubmit} className="d-grid gap-3">
-            <Form.Group controlId="booking-userId">
+            {isManager ? <Form.Group controlId="booking-userId">
               <Form.Label>Användar-ID</Form.Label>
               <Form.Control
                 name="userId"
@@ -189,7 +206,7 @@ export default function BookingsPage() {
                 placeholder="Ex. 1"
                 required
               />
-            </Form.Group>
+            </Form.Group> : null}
             <Form.Group controlId="booking-tableId">
               <Form.Label>Bord</Form.Label>
               <Form.Select
@@ -243,6 +260,7 @@ export default function BookingsPage() {
                 name="status"
                 value={formState.status}
                 onChange={handleChange}
+                disabled={isCustomer}
               >
                 {statusOptions.map(option => (
                   <option key={option} value={option}>{option}</option>
@@ -278,7 +296,7 @@ export default function BookingsPage() {
       <div className="d-flex align-items-center justify-content-between gap-3 mb-3">
         <div>
           <h2 className="mb-0">Bokningar</h2>
-          <p className="text-body-secondary mb-0">Översikt över samtliga bokningar.</p>
+          <p className="text-body-secondary mb-0">Översikt över {isManager ? 'samtliga' : 'dina'} bokningar.</p>
         </div>
         <div className="d-flex gap-2">
           <Button variant="outline-primary" onClick={reload} disabled={isLoading}>
@@ -296,32 +314,32 @@ export default function BookingsPage() {
         <BootstrapTable striped bordered hover>
           <thead>
             <tr>
+              {isManager ? <th>Användare</th> : null}
               <th>Bord</th>
               <th>Start</th>
               <th>Slut</th>
               <th>Gäster</th>
               <th>Status</th>
-              <th>Bokad av</th>
               <th>Anteckning</th>
               <th style={{ width: '1%' }} className="text-nowrap">Åtgärder</th>
             </tr>
           </thead>
           <tbody>
-            {bookings.length === 0 && !isLoading && (
+            {visibleBookings.length === 0 && !isLoading && (
               <tr>
-                <td colSpan={8} className="text-center text-body-secondary py-4">
+                <td colSpan={isManager ? 8 : 7} className="text-center text-body-secondary py-4">
                   Inga bokningar hittades.
                 </td>
               </tr>
             )}
-            {bookings.map(booking => (
+            {visibleBookings.map(booking => (
               <tr key={booking.id}>
+                {isManager ? <td>{booking.userEmail ?? `Användare #${booking.userId}`}</td> : null}
                 <td>{booking.tableName ?? `#${booking.tableId}`}</td>
                 <td>{new Date(booking.start).toLocaleString()}</td>
                 <td>{new Date(booking.endTime).toLocaleString()}</td>
                 <td>{booking.guestCount}</td>
                 <td>{booking.status}</td>
-                <td>{booking.userEmail ?? `Användare #${booking.userId}`}</td>
                 <td>{booking.note || '–'}</td>
                 <td>
                   <div className="d-flex gap-2">
@@ -337,7 +355,7 @@ export default function BookingsPage() {
                       variant="outline-danger"
                       size="sm"
                       onClick={() => handleDelete(booking.id)}
-                      disabled={isLoading || deletingId === booking.id}
+                      disabled={isLoading || deletingId === booking.id || (isCustomer && booking.userId !== user?.id)}
                     >
                       {deletingId === booking.id ? 'Tar bort…' : 'Ta bort'}
                     </Button>

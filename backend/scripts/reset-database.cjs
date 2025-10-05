@@ -1,4 +1,4 @@
-﻿const path = require('path');
+const path = require('path');
 const Database = require('better-sqlite3');
 const bcrypt = require('bcryptjs');
 
@@ -268,7 +268,7 @@ const seed = db.transaction(() => {
       comment: 'Lista produkter'
     },
     {
-      userRoles: 'visitor,user,staff,admin',
+      userRoles: 'user,staff,admin',
       method: 'GET',
       allow: 'allow',
       route: '/api/bookings',
@@ -276,15 +276,15 @@ const seed = db.transaction(() => {
       comment: 'Lista bokningar'
     },
     {
-      userRoles: 'visitor',
+      userRoles: 'user,staff,admin',
       method: 'POST',
       allow: 'allow',
       route: '/api/bookings',
       match: 'true',
-      comment: 'Besokare kan skapa bokning'
+      comment: 'Skapa bokning'
     },
     {
-      userRoles: 'visitor,user,staff,admin',
+      userRoles: 'user,staff,admin',
       method: '*',
       allow: 'allow',
       route: '/api/bookings',
