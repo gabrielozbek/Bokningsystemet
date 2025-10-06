@@ -64,10 +64,9 @@ export default function BookingsPage() {
   const [formSuccess, setFormSuccess] = useState<string | null>(null);
 
   useEffect(() => {
-    if (isCustomer && user) {
-      setFormState(previous => ({ ...previous, userId: user.id.toString() }));
-    }
-  }, [isCustomer, user]);
+    if (!user) { return; }
+    setFormState(previous => (editingId ? previous : { ...previous, userId: user.id.toString() }));
+  }, [user, editingId]);
 
   const loadTables = useCallback(async () => {
     setIsLoadingTables(true);
@@ -103,7 +102,8 @@ export default function BookingsPage() {
 
   function resetForm() {
     const base = initialFormState();
-    setFormState(isCustomer && user ? { ...base, userId: user.id.toString() } : base);
+    const withUser = user ? { ...base, userId: user.id.toString() } : base;
+    setFormState(withUser);
     setEditingId(null);
     setFormError(null);
     setFormSuccess(null);
@@ -150,7 +150,7 @@ export default function BookingsPage() {
     setFormError(null);
     setFormSuccess(null);
 
-    const userId = isManager ? Number(formState.userId) : user?.id ?? 0;
+    const userId = Number(formState.userId || user?.id || 0);
     const tableId = Number(formState.tableId);
     const guestCount = Number(formState.guestCount);
     const start = formState.start;
@@ -159,7 +159,7 @@ export default function BookingsPage() {
     const note = formState.note.trim();
 
     if (!Number.isInteger(userId) || userId <= 0) {
-      setFormError('Ange ett giltigt användar-ID.');
+      setFormError('Det gick inte att bestämma bokningens användare.');
       return;
     }
     if (!Number.isInteger(tableId) || tableId <= 0) {
@@ -219,18 +219,6 @@ export default function BookingsPage() {
           <Card.Title>{editingId ? 'Redigera bokning' : 'Skapa bokning'}</Card.Title>
           <Card.Text className="text-body-secondary">Tider bokas alltid i tvåtimmarsblock.</Card.Text>
           <Form onSubmit={handleSubmit} className="d-grid gap-3">
-            {isManager ? <Form.Group controlId="booking-userId">
-              <Form.Label>Användar-ID</Form.Label>
-              <Form.Control
-                name="userId"
-                type="number"
-                min={1}
-                value={formState.userId}
-                onChange={event => setFormState(previous => ({ ...previous, userId: event.target.value }))}
-                placeholder="Ex. 1"
-                required
-              />
-            </Form.Group> : null}
             <Form.Group controlId="booking-tableId">
               <Form.Label>Bord</Form.Label>
               <Form.Select

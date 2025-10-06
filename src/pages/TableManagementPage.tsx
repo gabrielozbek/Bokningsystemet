@@ -112,10 +112,6 @@ export default function TableManagementPage() {
     }
   }
 
-  async function handleToggleActive(table: Table) {
-    const updated = !table.is_active;
-    await update(table.id, { is_active: updated === true });
-  }
 
   return <Row className="g-4 py-4">
     <Col lg={4}>
@@ -215,14 +211,6 @@ export default function TableManagementPage() {
                 <td className="text-nowrap">
                   <div className="d-flex gap-2">
                     <Button variant="outline-secondary" size="sm" onClick={() => handleEdit(table)} disabled={isLoading}>Ändra</Button>
-                    <Button
-                      variant={table.is_active ? 'outline-warning' : 'outline-success'}
-                      size="sm"
-                      onClick={() => handleToggleActive(table)}
-                      disabled={isLoading}
-                    >
-                      {table.is_active ? 'Inaktivera' : 'Aktivera'}
-                    </Button>
                     <Button
                       variant="outline-danger"
                       size="sm"
