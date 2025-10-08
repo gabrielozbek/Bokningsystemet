@@ -1,0 +1,15 @@
+// Home/Start page specific styles
+
+.start-hero {
+  background: linear-gradient(135deg, rgba(34,63,168,1) 0%, rgba(16, 33, 97, 1) 100%);
+  box-shadow: 0 1rem 2rem rgba(0,0,0,.15);
+}
+
+.feature-card {
+  transition: transform .15s ease, box-shadow .15s ease;
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0.75rem 1.5rem rgba(0,0,0,.12);
+  }
+}
+
