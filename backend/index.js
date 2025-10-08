@@ -1,4 +1,4 @@
-// A Node.js based start up for the C#-based backend
+﻿// A Node.js based start up for the C#-based backend
 // (integrates with React Rapide that starts the index.js file in backend)
 // Allows the backend to start running as we start the Vite dev server!
 
@@ -38,49 +38,63 @@ export default function startBackend(app) {
   // Copy the database from template folder to backend folder if it does not exist there
   fs.existsSync(dbPath) || fs.copyFileSync(dbTemplatePath, dbPath);
 
-  // Port to start the backend on
-  let startPort = 5001;
+  let currentPort = 5001;
+  let backendProcess = null;
 
-  // Start .NET backend from Node.js
-  setTimeout(async function starter(initialStart = true) {
+  const proxyMiddleware = (req, res, next) => {
+    proxy(`localhost:${currentPort}`, {
+      proxyReqPathResolver(req) {
+        return '/api' + req.url;
+      }
+    })(req, res, next);
+  };
 
-    while (!await isFreePort(startPort)) { startPort++; }
-    let backendProcess = spawn(
-      `dotnet run ${startPort} "${distFolder}" "${dbPath}"`,
-      { cwd: import.meta.dirname, stdio: 'inherit', shell: true }
-    );
+  app.use('/api', proxyMiddleware);
 
-    // Proxy traffic to the backend if the request starts with /api
-    initialStart && app.use('/api', (req, res, next) => {
-      proxy(`localhost:${startPort}`, {
-        proxyReqPathResolver(req) {
-          return '/api' + req.url;
-        }
-      })(req, res, next);
+  async function findFreePort() {
+    let port = 5001;
+    while (!await isFreePort(port)) {
+      port++;
+    }
+    return port;
+  }
+
+  function startProcess(initialStart = false) {
+    const portPromise = findFreePort();
+    portPromise.then(port => {
+      currentPort = port;
+      backendProcess = spawn(
+        `dotnet run ${currentPort} "${distFolder}" "${dbPath}"`,
+        { cwd: import.meta.dirname, stdio: 'inherit', shell: true }
+      );
+
+      process.on('exit', () => backendProcess && backendProcess.kill());
+
+      if (initialStart) {
+        setTimeout(() => {
+          console.log(
+            'Started C#/.NET based Minimal API\n' +
+            '\nNote:\nStill visit the Vite Dev Port for all requests,\n' +
+            'unless you want to check a build,\n' +
+            `in that case visit the server port (${currentPort}) directly.\n`
+          );
+        }, 3000);
+      }
     });
+  }
 
-    // Kill the backend process on exit
-    process.on('exit', () => backendProcess.kill());
+  startProcess(true);
 
-    // Listen to changes to backend source code and restart the backend
-    initialStart && chokidar.watch(path.join(import.meta.dirname, 'src'))
-      .on('all', (event, path) => {
-        if (event === 'change' && (path + '').endsWith('.cs')) {
+  chokidar.watch(path.join(import.meta.dirname, 'src'))
+    .on('all', (event, filePath) => {
+      if (event === 'change' && (filePath + '').endsWith('.cs')) {
+        if (backendProcess) {
           backendProcess.kill();
-          console.log(event, path);
-          console.log('\nRestarting backend because of changes to source!\n');
-          starter(false);
         }
-      });
-
-    // Extra message (info about ports)
-    initialStart && setTimeout(() => {
-      console.log(
-        'Started C#/.NET based Minimal API\n' +
-        '\nNote:\nStill visit the Vite Dev Port for all requests,\n' +
-        'unless you want to check a build,\n' +
-        `in that case visit the server port (${startPort}) directly.\n`);
-    }, 3000);
-  }, 1);
-
+        console.log(event, filePath);
+        console.log('\nRestarting backend because of changes to source!\n');
+        startProcess();
+      }
+    });
 }
+

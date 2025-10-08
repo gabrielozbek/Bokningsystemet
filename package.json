@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "node node_modules/react-rapide dev",
+    "dev:local": "node scripts/dev-both.cjs",
+    "dev:vite": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "node node_modules/react-rapide preview",
